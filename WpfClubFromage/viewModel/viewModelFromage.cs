@@ -9,6 +9,7 @@ using System.Windows.Input;
 using ModelLayer.Business;
 using ModelLayer.Data;
 using WpfClubFromage.viewModel;
+using System.Windows;
 
 namespace WpfClubFromage.viewModel
 {
@@ -20,11 +21,9 @@ namespace WpfClubFromage.viewModel
         private ICommand updateCommand;
         private ObservableCollection<Pays> listPays;
         private ObservableCollection<Fromage> listFromages;
-        private readonly ICollectionView collectionView;
-        private Fromage monFromage = new Fromage(1,"Rebloch");
         private Fromage selectedFromage = new Fromage();
         private Fromage activeFromage = new Fromage();
-        
+
 
         //déclaration des listes...à compléter avec les fromages
         public ObservableCollection<Pays> ListPays { get => listPays; set => listPays = value; }
@@ -34,12 +33,12 @@ namespace WpfClubFromage.viewModel
         public string Name
         {
             get => activeFromage.Name;
-            
+
             set
             {
-                if (monFromage.Name != value)
+                if (activeFromage.Name != value)
                 {
-                    monFromage.Name = value;
+                    activeFromage.Name = value;
                     //création d'un évènement si la propriété Name (bindée dans le XAML) change
                     OnPropertyChanged("Name");
                 }
@@ -53,7 +52,7 @@ namespace WpfClubFromage.viewModel
 
             set
             {
-                if (selectedFromage!= value)
+                if (selectedFromage != value)
                 {
                     selectedFromage = value;
                     //création d'un évènement si la propriété Name (bindée dans le XAML) change
@@ -81,9 +80,37 @@ namespace WpfClubFromage.viewModel
         }
 
 
+        public DateTime Creation
+        {
+            get => activeFromage.Creation;
+
+            set
+            {
+                if (activeFromage.Creation != value)
+                {
+                    activeFromage.Creation = value;
+                    //création d'un évènement si la propriété Name (bindée dans le XAML) change
+                    OnPropertyChanged("Creation");
+                }
+            }
+        }
 
 
+        public Pays Origin
+        {
+            get => activeFromage.Origin;
 
+            set
+            {
+                if (activeFromage.Origin != value)
+                {
+                    activeFromage.Origin = value;
+                    OnPropertyChanged("Origin");
+
+
+                }
+            }
+        }
 
         //déclaration du contructeur de viewModelFromage
         public viewModelFromage(DaoPays thedaopays, DaoFromage thedaofromages)
@@ -93,7 +120,34 @@ namespace WpfClubFromage.viewModel
 
             listPays = new ObservableCollection<Pays>(thedaopays.SelectAll());
             listFromages = new ObservableCollection<Fromage>(thedaofromages.SelectAll());
-           
+
+
+            /*foreach (Fromage itemFr in listFromages)
+            {
+                foreach (Pays itemPa in listPays)
+                {
+                    if (itemFr.Origin.Id == itemPa.Id)
+                    {
+                        itemFr.Origin = itemPa;
+                        
+                    }
+                }
+            }
+            */
+
+
+
+            foreach (Fromage itemFr in listFromages)
+            {
+                int i = 0;
+                while (itemFr.Origin.Id != listPays[i].Id)
+                {
+                    i++;
+                }
+                itemFr.Origin = listPays[i];
+
+            }
+
 
         }
 
@@ -112,10 +166,14 @@ namespace WpfClubFromage.viewModel
 
         }
 
-        private void UpdateFromage()
+        public  void UpdateFromage()
         {
             //code du bouton - à coder
+            this.vmDaoFromage.Update(this.activeFromage);
+            MessageBox.Show("test");
             
+            OnPropertyChanged("ListFromages");
+
         }
     }
 }
