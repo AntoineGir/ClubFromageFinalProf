@@ -19,6 +19,8 @@ namespace WpfClubFromage.viewModel
         private DaoPays vmDaoPays;
         private DaoFromage vmDaoFromage;
         private ICommand updateCommand;
+        private ICommand newCommand;
+        private ICommand deleteCommand;
         private ObservableCollection<Pays> listPays;
         private ObservableCollection<Fromage> listFromages;
         private Fromage selectedFromage = new Fromage();
@@ -57,7 +59,11 @@ namespace WpfClubFromage.viewModel
                     selectedFromage = value;
                     //création d'un évènement si la propriété Name (bindée dans le XAML) change
                     OnPropertyChanged("SelectedFromage");
-                    ActiveFromage = selectedFromage;
+
+                    if (selectedFromage != null)
+                    {
+                        ActiveFromage = selectedFromage;
+                    }
                 }
             }
         }
@@ -134,9 +140,6 @@ namespace WpfClubFromage.viewModel
                 }
             }
             */
-
-
-
             foreach (Fromage itemFr in listFromages)
             {
                 int i = 0;
@@ -145,10 +148,7 @@ namespace WpfClubFromage.viewModel
                     i++;
                 }
                 itemFr.Origin = listPays[i];
-
             }
-
-
         }
 
         //Méthode appelée au click du bouton UpdateCommand
@@ -166,14 +166,59 @@ namespace WpfClubFromage.viewModel
 
         }
 
-        public  void UpdateFromage()
+        public void UpdateFromage()
         {
             //code du bouton - à coder
-            this.vmDaoFromage.Update(this.activeFromage);
-            MessageBox.Show("test");
-            
-            OnPropertyChanged("ListFromages");
+            Fromage backup = new Fromage();
+            this.vmDaoFromage.Update(this.ActiveFromage);
+            int emplacement = listFromages.IndexOf(SelectedFromage);
+            backup = ActiveFromage;
+            listFromages.Insert(emplacement, ActiveFromage);
+            listFromages.RemoveAt(emplacement + 1);
+            SelectedFromage = backup;
+        }
 
+        public ICommand NewCommand
+        {
+            get
+            {
+                if (this.newCommand == null)
+                {
+                    this.newCommand = new RelayCommand(() => NewFromage(), () => true);
+                }
+                return this.newCommand;
+            }
+        }
+
+        public void NewFromage()
+        {
+            //code du bouton - à coder
+            
+            int total = listFromages.Count;
+            total = SelectedFromage.Id;
+            this.vmDaoFromage.Insert(this.ActiveFromage);
+
+            listFromages.Insert(total, ActiveFromage);
+        }
+
+
+        public ICommand DeleteCommand
+        {
+            get
+            {
+                if (this.deleteCommand == null)
+                {
+                    this.deleteCommand = new RelayCommand(() => DeleteFromage(), () => true);
+                }
+                return this.deleteCommand;
+            }
+        }
+
+        public void DeleteFromage()
+        {
+            this.vmDaoFromage.Delete(this.ActiveFromage);
+            int emplacement = listFromages.IndexOf(SelectedFromage);
+            listFromages.RemoveAt(emplacement);
         }
     }
 }
